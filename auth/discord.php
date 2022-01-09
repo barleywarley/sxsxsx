@@ -164,6 +164,7 @@ if (isset($_SESSION['access_token'])) {
         curl_setopt($panelapi, CURLOPT_HTTPHEADER, $headers);
         curl_setopt($panelapi, CURLOPT_POST, 1);
         curl_setopt($panelapi, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($panelapi, CURLOPT_CONNECTTIMEOUT, 5);
         curl_setopt($panelapi, CURLOPT_POSTFIELDS, json_encode($postfields));
         $result = curl_exec($panelapi);
         curl_close($panelapi);
@@ -215,7 +216,7 @@ if (isset($_SESSION['access_token'])) {
                     $_SESSION['error'] = "There was an error while updating your panel information on sign-up, your password might need resetting.";
                 }
             } else {
-                $_SESSION['error'] = "There was an error while signing up. Is our game panel down?";
+                $_SESSION['error'] = "We were unable to connect to the game panel!";
                 header("location: /auth/login");
                 die();
             }

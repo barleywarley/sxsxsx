@@ -43,6 +43,7 @@ foreach($servers as $serv) {
     $alloc = $result['attributes']['feature_limits']['allocations'] - 1;
     $usedPorts = $usedPorts + $alloc;
     $usedDatabase = $usedDatabase + $db;
+    $usedCpu = $usedCpu + $cpuh;
     array_push($uservers, $result['attributes']);
 }
 foreach($servers_in_queue as $server) {
@@ -50,8 +51,9 @@ foreach($servers_in_queue as $server) {
     $usedDisk = $usedDisk + $server['disk'];
     $usedPorts = $usedPorts + $server['xtra_ports'];
     $usedDatabase = $usedDatabase + $server['databases'];
-
+    $usedCpu = $usedCpu + $server["cpu"];
 }
+
 ?>
     <!-- Header -->
     <!-- Header -->
@@ -96,8 +98,20 @@ foreach($servers_in_queue as $server) {
                   <div class="row">
                     <div class="col">
                       <h5 class="card-title text-uppercase text-muted mb-0 text-white">Processor limit</h5>
-                      <span class="h2 font-weight-bold mb-0 text-white"><?= $userdb["cpu"] ?>%</span>
-                      <br/><br/>
+                      <span class="h2 font-weight-bold mb-0 text-white"><?= $usedCpu . "/" . $userdb["cpu"] ?>%</span>
+                      <?php
+                      $percentage = percentage($usedCpu, $userdb["cpu"], 100);
+                      $progresscolor = "white";
+                      if ($percentage >= 85) {
+                          $progresscolor = "warning";
+                      }
+                      if ($percentage >= 100) {
+                          $progresscolor = "danger";
+                      }
+                      ?>
+                      <div class="progress" style="height: 5px; background-color: rgba(255, 255, 255, .2);">
+                          <div class="progress-bar bg-<?= $progresscolor ?>" role="progressbar" aria-valuenow="<?= $percentage ?>" aria-valuemin="0" aria-valuemax="100" style="width: <?= $percentage ?>%;"></div>
+                      </div>
                     </div>
                     <div class="col-auto">
                       <div class="icon icon-shape bg-white text-dark rounded-circle shadow">
@@ -231,7 +245,7 @@ foreach($servers_in_queue as $server) {
                     <div class="card-body">
                         <div class="row">
                             <div class="col">
-                                <h5 class="card-title text-uppercase text-muted mb-0 text-white">Ports limit</h5>
+                                <h5 class="card-title text-uppercase text-muted mb-0 text-white">Additional ports</h5>
                                 <span class="h2 font-weight-bold mb-0 text-white"><?= $usedPorts . "/" . $userdb["ports"] ?></span>
                                 <?php
                                 $percentage = percentage($usedPorts, $userdb["ports"], 100);
@@ -337,7 +351,7 @@ foreach($servers_in_queue as $server) {
                         <table class="table align-items-center table-dark table-flush">
                             <tbody class="list">
                             <?php
-                            if (count($uservers) == 0) {
+                            if (count($uservers) == 0 && $servers_in_queue->num_rows == 0) {
                                 // No servers
                                 ?>
                                 <div style="text-align: center;">
@@ -405,7 +419,7 @@ foreach($servers_in_queue as $server) {
                                         <?= $egg["name"] ?>
                                     </td>
                                     <td>
-                                        <?= $server["cpu"]*100 ?>%
+                                        <?= $server["cpu"] ?>%
                                     </td>
                                     <td>
                                         <?= $server["ram"] ?>MB
@@ -431,7 +445,7 @@ foreach($servers_in_queue as $server) {
                                 $egg = mysqli_query($cpconn, "SELECT * FROM eggs WHERE `eggs`.`egg`='" . $server["egg"] . "'")->fetch_array();
                                 $serverinfo = mysqli_query($cpconn, "SELECT * FROM servers WHERE `servers`.`pid`='" . $server["id"] . "'")->fetch_array();
                                 $location = mysqli_query($cpconn, "SELECT * FROM locations WHERE `locations`.`id`='" . $serverinfo["location"] . "'")->fetch_array();
-                                $uuid = $variable = substr($server['uuid'], 0, strpos($server['uuid'], "-"));
+                                $uuid = substr($server['uuid'], 0, strpos($server['uuid'], "-"));
                                 ?>
                                 <tr>
                                     <th scope="row">
@@ -451,8 +465,6 @@ foreach($servers_in_queue as $server) {
                                             echo '<span class="badge badge-dot mr-4"><i class="bg-warning"></i><span class="status">Installing</span></span>';
                                         } elseif ($server["suspended"] == true) {
                                             echo '<span class="badge badge-dot mr-4"><i class="bg-warning"></i><span class="status">Suspended</span></span>';
-                                        } else {
-                                            echo '<span class="badge badge-dot mr-4"><i class="bg-success"></i><span class="status">Installed</span></span>';
                                         }
                                         ?>
                                     </td>
@@ -471,8 +483,8 @@ foreach($servers_in_queue as $server) {
                                     </td>
                                     <td>
                                         <a href="<?= $_CONFIG["ptero_url"] . "/server/" . $server["identifier"] ?>" class="btn btn-primary btn-sm" data-trigger="hover" data-container="body" data-toggle="popover" data-color="default" data-placement="left" data-content="Open in the game panel"><i class="fas fa-external-link-square-alt"></i></a>
-                                        <a href="/servers/manage?id=<?= $server["id"] ?>" class="btn btn-primary btn-sm">Edit</a>
-                                        <button type="button" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i> Delete</button>
+                                        <a href="/server/manage?id=<?= $server["id"] ?>" class="btn btn-primary btn-sm">Edit</a>
+                                        <a href="/server/delete?server=<?= $server["id"] ?>"><button type="button" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i> Delete</button></a>
                                     </td>
                                 </tr>
                             <?php
@@ -530,3 +542,4 @@ foreach($servers_in_queue as $server) {
 </body>
 
 </html>
+

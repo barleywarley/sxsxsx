@@ -1,5 +1,6 @@
 <?php
 require("../../../require/sql.php");
+require("../../../require/addons.php");
 session_start();
 $queue = 0;
 if (!isset($_SESSION['loggedin'])) {
@@ -32,6 +33,15 @@ $usedPorts = 0;
 $usedDisk = 0;
 $servers = mysqli_query($cpconn, "SELECT * FROM servers WHERE uid = '$user->id'");
 $servers_in_queue = mysqli_query($cpconn, "SELECT * FROM servers_queue WHERE ownerid = '" . mysqli_real_escape_string($cpconn, $user->id) . "'");
+if ($servers_in_queue->num_rows >= 2) {
+    die(json_encode(array(
+        'errors' => [
+            'code' => 'NotEnoughResourcesException',
+            'status' => 400,
+            'detail' => "You cannot have more than two servers in queue."
+        ]
+    )));
+}
 foreach($servers as $serv) {
     $ptid = $serv["pid"];
     $ch = curl_init($_CONFIG["ptero_url"] . "/api/application/servers/" . $ptid);
@@ -48,10 +58,13 @@ foreach($servers as $serv) {
     $disk = $result['attributes']['limits']['disk'];
     $ports = $result['attributes']['feature_limits']['allocations'] - 1;
     $databases = $result['attributes']['feature_limits']['databases'];
+    $cpuh = $result['attributes']['limits']['cpu'];
     $usedDatabase = $usedDatabase + $databases;
     $usedPorts = $usedPorts + $ports;
+    $usedCpu = $usedCpu + $cpuh;
     $usedRam = $usedRam + $ram;
     $usedDisk = $usedDisk + $disk;
+    
 }
 foreach($servers_in_queue as $server) {
     $usedRam = $usedRam + $server['ram'];
@@ -157,6 +170,15 @@ if ($_POST['cores'] > $cpuLimit) {
         ]
     )));
 }
+if ($_POST['cores'] > $cpuLimit) {
+    die(json_encode(array(
+        'errors' => [
+            'code' => 'NotEnoughResourcesException',
+            'status' => 400,
+            'detail' => "You have no CPU cores left!"
+        ]
+    )));
+}
 if ($_POST['memory'] > $freeRam) {
     die(json_encode(array(
         'errors' => [
@@ -194,19 +216,6 @@ if ($_POST['databases'] > $freeDatabases) {
     )));
 }
 $locid = $_POST['location'];
-if ($locid == 3) {
-    $donator = $cpconn->query("SELECT * FROM donators WHERE uid = '$user->id'")->num_rows;
-    if ($donator == 0) {
-        die(json_encode(array(
-            'errors' => [
-                'code' => 'NotDonatorException',
-                'status' => 400,
-                'detail' => "You don't have donator node access."
-            ],
-            'success' => false
-        )));
-    }
-}
 $doeslocationexist = mysqli_query($cpconn, "SELECT * FROM locations WHERE id = '" . mysqli_real_escape_string($cpconn, $locid) . "'");
 if ($doeslocationexist->num_rows == 0) {
     die(json_encode(array(
@@ -239,7 +248,7 @@ $cpu = $_POST['cores'];
 $xtraports = $_POST['ports'];
 $location = $_POST['location'];
 $databases = $_POST['databases'];
-$created = date("d-m-y", time());
+$created = time();
 if (mysqli_query($cpconn, "INSERT INTO servers_queue (`name`, `ram`, `disk`, `cpu`, `xtra_ports`, `databases`, `location`, `ownerid`, `type`, `egg`, `puid`, `created`) VALUES ('" . mysqli_real_escape_string($cpconn, $name) . "', '" . mysqli_real_escape_string($cpconn, $ram) . "', '" . mysqli_real_escape_string($cpconn, $disk) . "', '" . mysqli_real_escape_string($cpconn, $cpu) . "', '" . mysqli_real_escape_string($cpconn, $xtraports) . "', '" . mysqli_real_escape_string($cpconn, $databases) . "', '" . mysqli_real_escape_string($cpconn, $location) . "', '" . mysqli_real_escape_string($cpconn, $user->id) . "', '$queue', '" . mysqli_real_escape_string($cpconn, $eggid) . "', '$userdb->panel_id', '$created')")) {
     die(json_encode(array(
         'success' => true

@@ -227,7 +227,7 @@ CREATE TABLE `users` (
   `disk_space` int(255) NOT NULL DEFAULT 10000 COMMENT 'Change this for default plan',
   `ports` int(255) DEFAULT 1 COMMENT 'Change this for default plan',
   `databases` int(255) DEFAULT 1 COMMENT 'Change this for default plan',
-  `cpu` text NOT NULL DEFAULT '60' COMMENT 'Change this for default plan',
+  `cpu` varchar(255) NOT NULL DEFAULT '60' COMMENT 'Change this for default plan',
   `server_limit` int(255) NOT NULL DEFAULT 2 COMMENT 'Change this for default plan',
   `panel_username` varchar(255) NOT NULL,
   `panel_password` varchar(255) NOT NULL,

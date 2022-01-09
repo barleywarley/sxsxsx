@@ -118,11 +118,12 @@ session_start();
         ?>
           <div class="card bg-secondary border-0 mb-0">
             <div class="card-header bg-transparent pb-5">
-              <div class="text-muted text-center mt-2 mb-3"><small>Sign in with</small></div>
+              <div class="text-muted text-center mt-2 mb-3"><small id="signininfotext">Sign in with</small></div>
               <div class="btn-wrapper text-center">
-                <a href="discord" class="btn btn-neutral btn-icon" onClick="showLoading()">
+                <img src="/assets/img/loading.gif" width="64" id="loadingimg" style="display: none;"/>
+                <a href="discord" class="btn btn-neutral btn-icon" onClick="showLoading()" id="loginButton">
                   <span class="btn-inner--icon"><img src="https://i.imgur.com/7gT8i9O.png"></span>
-                  <span class="btn-inner--text"><img src="/assets/img/loading.gif" width="20" id="loadingimg" style="display: none;"/> Discord</span>
+                  <span class="btn-inner--text"> Discord</span>
                 </a>
                 <br/><br/>
                 <small><font color="gray">By logging in, you agree to our <a href="<?= $_CONFIG["privacypolicy"] ?>">Privacy Policy</a> and our <a href="<?= $_CONFIG["termsofservice"] ?>">Terms Of Service</a>.</font></small>
@@ -149,7 +150,9 @@ session_start();
   <!-- Core -->
   <script>
       function showLoading() {
+          document.getElementById("signininfotext").innerHTML = "Logging in...";
           document.getElementById("loadingimg").style.display = "inline";
+          document.getElementById("loginButton").style.display = "none";
       }
   </script>
   <script src="/assets/vendor/jquery/dist/jquery.min.js"></script>
