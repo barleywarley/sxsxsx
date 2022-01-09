@@ -7,6 +7,9 @@
 <p align="center"><a href="https://dashdocs.shadow-baguet.xyz/"><img src="https://i.imgur.com/IJnJnTA.png" width=20%></a> <a href="https://donate.shadow-baguet.xyz/"><img src="https://i.imgur.com/0a2PENa.png" width=20%></a></p>
 All installation, add-ons tutorials and other stuff are available in the documentation!
 
+# 👋 Services using ShadowsDash
+[OptikServers.com - Free 24/7 server hosting](https://my.optikservers.com)
+
 # 🗃️ Base features
 Theses features are the basic ones. In the future, more features are likely to come.
 | Feature               | Available |
